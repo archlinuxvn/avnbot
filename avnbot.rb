@@ -56,7 +56,7 @@ Action: DELETE
 User (Id/Name): #{msg.from.id} @#{msg.from.username}
 Msg: #{msg.text}
 Group: #{msg.chat.id}
-Reason: Filtered by Lauxanh (github.com/lauxanh/I-A/)
+Reason: Filtered by Lauxanh
 EOF
 
         bot.api.send_message(chat_id: CHANNEL_ID_LINUXVN_LOGS, text: mod_logs)
