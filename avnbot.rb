@@ -4,16 +4,21 @@
 # Author  : Ky-Anh Huynh
 # Date    : Early morning 2017 Nov 10th
 
+# https://github.com/atipugin/telegram-bot-ruby
 require 'telegram/bot'
 require 'to_regexp'
 require 'time'
+
 require File.join(File.dirname(__FILE__), "reg.rb")
 include Avn::Filter
 
-@regexps = []
-token = ENV["TELEGRAM_BOT_TOKEN"]
-WHITE_CHANNELS = %w{-1001141531574 -1001105262960}
-SETTINGS = {records: {}, max_badwords: 5}
+TOKEN_BOT = ENV["TELEGRAM_BOT_TOKEN"]
+
+# White channels allow mod to use `/reload` command
+WHITE_CHANNELS = %w{}
+CHANNEL_ID_LINUXVN_LOGS = "-1001306210991"
+
+SETTINGS = {records: {}, max_badwords: 5, regexps: []}
 
 def log(msg, args)
   if msg
@@ -23,15 +28,17 @@ def log(msg, args)
   end
 end
 
+# Reset all :records stored in `SETTINGS`. This is also invoked
+# when the bot starts.
 def reload!(msg)
-  @regexps = Avn::Filter::build
   SETTINGS[:records] = {}
-  log(msg, "REL #{@regexps}")
+  SETTINGS[:regexps] = Avn::Filter::build
+  log(msg, "REL #{SETTINGS[:regexps]}")
 end
 
 reload!(nil)
 
-Telegram::Bot::Client.run(token) do |bot|
+Telegram::Bot::Client.run(TOKEN_BOT) do |bot|
   bot.listen do |msg|
     if msg.text == "/reload"
       if WHITE_CHANNELS.include?(msg.chat.id.to_s)
@@ -40,9 +47,20 @@ Telegram::Bot::Client.run(token) do |bot|
     elsif found = Avn::Filter.match(msg.text)
       begin
         bot.api.deleteMessage(chat_id: msg.chat.id, message_id: msg.message_id)
-        log(msg, "DEL #{msg.text}, reason: #{found[:reg].inspect}")
 
+        # Logging to Telegram Channel, and System Logs
         _user_id="#{msg.from.id}@#{msg.from.username}"
+
+        mod_logs = "#{<<EOF}"
+Action: DELETE
+User (Id/Name): #{msg.from.id} @#{msg.from.username}
+Msg: #{msg.text}
+Group: #{msg.chat.id}
+Reason: Filtered by Lauxanh (github.com/lauxanh/I-A/)
+EOF
+
+        bot.api.send_message(chat_id: CHANNEL_ID_LINUXVN_LOGS, text: mod_logs)
+        log(msg, "DEL #{msg.text}, reason: #{found[:reg].inspect}")
 
         SETTINGS[:records][_user_id] ||= 0
         SETTINGS[:records][_user_id] += 1

@@ -5,6 +5,8 @@
 require 'to_regexp'
 module Avn
   module Filter
+    # Using public service from Lauxanh (https://github.com/lauxanh/I-A/blob/master/list-1.txt)
+    # Lauxanh is one of the best online services for Vietnamese young people;)
     @@source = File.join(File.dirname(__FILE__), "badwords.txt")
     @@regs = nil
     def build
