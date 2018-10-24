@@ -66,7 +66,17 @@ EOF
         SETTINGS[:records][_user_id] += 1
 
         if SETTINGS[:records][_user_id] > SETTINGS[:max_badwords]
+          mod_logs = "#{<<EOF}"
+Action: RESTRICT_USER
+User (Id/Name): #{msg.from.id} @#{msg.from.username}
+Group: #{msg.chat.id}
+Reason: Quota reached (#{SETTINGS[:max_badwords]})
+Expiration: 86400 seconds
+EOF
+
+          bot.api.send_message(chat_id: CHANNEL_ID_LINUXVN_LOGS, text: mod_logs)
           log(msg, "RES #{msg.from.id}, record: #{SETTINGS[:records][_user_id]}")
+
           bot.api.restrictChatMember(
             chat_id: msg.chat.id,
             user_id: msg.from.id,
