@@ -1,8 +1,8 @@
 ### Bot features
 
-* `//blockme NUMBER_OF_SECOND`:
-  User can restrict themself.
-  `NUMBER_OF_SECOND` should be `>= 120`
+* `//blockme NUMBER_OF_SECONDS`:
+  User can restrict themselves.
+  `NUMBER_OF_SECONDS` should be `>= 120`
 * `/reload`:
   Reload bot configuration. This feature is disabled now.
 * `Badword filter`:
