@@ -32,3 +32,9 @@ use your testing group to get logs, then add the bot `@RawDataBot` to get
 the group ID. Remember to remove `@RawDataBot` immediately.
 
 TODO: `CHANNEL_ID_LINUXVN_LOGS` is default to current group.
+
+### Unblock yourself
+
+Wait for expiration of the restriction action,
+or contact any administrator of the group.
+(You can see them from the list of all group members.)
