@@ -17,7 +17,7 @@
 1. Allow your bot to delete message and ban user
 1. Modify the list `badwords.txt`
 1. Update `env.sh` (see example below)
-1. Start the bot
+1. Start the bot with the script `./start.sh`
 
 ### Sample env.sh
 
