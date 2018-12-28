@@ -12,7 +12,7 @@
 
 ### Testing the bot
 
-1. Create a supergroup
+1. Create a supergroup (and an optional logging group, se below)
 1. Add your testing bot
 1. Allow your bot to delete message and ban user
 1. Modify the list `badwords.txt`
@@ -27,7 +27,7 @@ export TELEGRAM_BOT_TOKEN="495851205:yyy"
 export CHANNEL_ID_LINUXVN_LOGS="-xx"
 ```
 
-The bot will write log to custom group. You can create new group and/or
+The bot will write log to a custom group. You can create new group and/or
 use your testing group to get logs, then add the bot `@RawDataBot` to get
 the group ID. Remember to remove `@RawDataBot` immediately.
 
