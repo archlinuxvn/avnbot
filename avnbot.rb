@@ -80,7 +80,7 @@ EOF
 end
 
 def act_blockme(bot, msg)
-  found = msg.text.strip.match(%r{^//blockme (\d+)$})
+  found = msg.text.to_s.strip.match(%r{^//blockme (\d+)$})
   return true if not found
   expiration = found[1].to_i
 
