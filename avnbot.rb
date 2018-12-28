@@ -37,16 +37,14 @@ def reload!(msg)
 end
 
 def act_reload(bot, msg)
-  ret = false
-
   if msg.text == "/reload"
     if WHITE_CHANNELS.include?(msg.chat.id.to_s)
       reload!(msg)
     end
-    ret = true
+    return true
   end
 
-  return ret
+  return false
 end
 
 def _act_restrict(bot, msg, notes, expiration = 86400)
@@ -81,19 +79,20 @@ end
 
 def act_blockme(bot, msg)
   found = msg.text.to_s.strip.match(%r{^//blockme (\d+)$})
-  return true if not found
+  return false if not found
+
   expiration = found[1].to_i
 
   if expiration >= 120
     _act_restrict(bot, msg, "BLO #{expiration}", expiration)
   end
 
-  return false
+  return true
 end
 
 def act_filter(bot, msg)
   found = Avn::Filter.match(msg.text)
-  return true if not found
+  return false if not found
 
   begin
     bot.api.deleteMessage(chat_id: msg.chat.id, message_id: msg.message_id)
@@ -123,7 +122,7 @@ EOF
     log(msg, "ERR #{e}")
   end
 
-  return false
+  return true
 end
 
 reload!(nil)
