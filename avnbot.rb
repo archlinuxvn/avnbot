@@ -16,7 +16,7 @@ TOKEN_BOT = ENV["TELEGRAM_BOT_TOKEN"]
 
 # White channels allow mod to use `/reload` command
 WHITE_CHANNELS = %w{}
-CHANNEL_ID_LINUXVN_LOGS = "-1001306210991"
+CHANNEL_ID_LINUXVN_LOGS = ENV["CHANNEL_ID_LINUXVN_LOGS"]
 
 SETTINGS = {records: {}, max_badwords: 5, regexps: []}
 
@@ -36,22 +36,69 @@ def reload!(msg)
   log(msg, "REL #{SETTINGS[:regexps]}")
 end
 
-reload!(nil)
+def act_reload(bot, msg)
+  ret = false
 
-Telegram::Bot::Client.run(TOKEN_BOT) do |bot|
-  bot.listen do |msg|
-    if msg.text == "/reload"
-      if WHITE_CHANNELS.include?(msg.chat.id.to_s)
-        reload!(msg)
-      end
-    elsif found = Avn::Filter.match(msg.text)
-      begin
-        bot.api.deleteMessage(chat_id: msg.chat.id, message_id: msg.message_id)
+  if msg.text == "/reload"
+    if WHITE_CHANNELS.include?(msg.chat.id.to_s)
+      reload!(msg)
+    end
+    ret = true
+  end
 
-        # Logging to Telegram Channel, and System Logs
-        _user_id="#{msg.from.id}@#{msg.from.username}"
+  return ret
+end
 
-        mod_logs = "#{<<EOF}"
+def _act_restrict(bot, msg, notes, expiration = 86400)
+  mod_logs = "#{<<EOF}"
+Action: RESTRICT_USER
+User (Id/Name): #{msg.from.id} @#{msg.from.username}
+Group: #{msg.chat.id}
+Reason: #{notes}
+Expiration: #{expiration} seconds
+EOF
+
+  begin
+    bot.api.send_message(chat_id: CHANNEL_ID_LINUXVN_LOGS, text: mod_logs)
+    log(msg, "RES #{msg.from.id}, notes: #{notes}")
+
+    bot.api.restrictChatMember(
+      chat_id: msg.chat.id,
+      user_id: msg.from.id,
+      until_date: Time.now.to_i + expiration,
+      can_send_messages: false,
+      can_send_media_messages: false,
+      can_send_other_messages: false,
+      can_add_web_page_previews: false
+    )
+  rescue => e
+    log(msg, "ERR #{e}")
+  end
+
+  # FIXME: Always return false here...
+  return false
+end
+
+def act_blockme(bot, msg)
+  found = msg.text.strip.match(%r{^//blockme (\d+)$})
+  return true if not found
+  expiration = found[1].to_i
+
+  if expiration >= 120
+    _act_restrict(bot, msg, "BLO #{expiration}", expiration)
+  end
+
+  return false
+end
+
+def act_filter(bot, msg)
+  found = Avn::Filter.match(msg.text)
+  return true if not found
+
+  begin
+    bot.api.deleteMessage(chat_id: msg.chat.id, message_id: msg.message_id)
+
+    mod_logs = "#{<<EOF}"
 Action: DELETE
 User (Id/Name): #{msg.from.id} @#{msg.from.username}
 Msg: #{msg.text}
@@ -59,39 +106,32 @@ Group: #{msg.chat.id}
 Reason: Filtered by Lauxanh
 EOF
 
-        bot.api.send_message(chat_id: CHANNEL_ID_LINUXVN_LOGS, text: mod_logs)
-        log(msg, "DEL #{msg.text}, reason: #{found[:reg].inspect}")
+    bot.api.send_message(chat_id: CHANNEL_ID_LINUXVN_LOGS, text: mod_logs)
+    log(msg, "DEL #{msg.text}, reason: #{found[:reg].inspect}")
 
-        SETTINGS[:records][_user_id] ||= 0
-        SETTINGS[:records][_user_id] += 1
+    # Logging to Telegram Channel, and System Logs
+    _user_id="#{msg.from.id}@#{msg.from.username}"
 
-        if SETTINGS[:records][_user_id] > SETTINGS[:max_badwords]
-          mod_logs = "#{<<EOF}"
-Action: RESTRICT_USER
-User (Id/Name): #{msg.from.id} @#{msg.from.username}
-Group: #{msg.chat.id}
-Reason: Quota reached (#{SETTINGS[:max_badwords]})
-Expiration: 86400 seconds
-EOF
+    SETTINGS[:records][_user_id] ||= 0
+    SETTINGS[:records][_user_id] += 1
 
-          bot.api.send_message(chat_id: CHANNEL_ID_LINUXVN_LOGS, text: mod_logs)
-          log(msg, "RES #{msg.from.id}, record: #{SETTINGS[:records][_user_id]}")
-
-          bot.api.restrictChatMember(
-            chat_id: msg.chat.id,
-            user_id: msg.from.id,
-            until_date: Time.now.to_i + 86400,
-            can_send_messages: false,
-            can_send_media_messages: false,
-            can_send_other_messages: false,
-            can_add_web_page_previews: false
-          )
-
-          SETTINGS[:records][_user_id] = 0
-        end
-      rescue => e
-        log(msg, "ERR #{e}")
-      end
+    if SETTINGS[:records][_user_id] > SETTINGS[:max_badwords]
+      _act_restrict(bot, msg, "Quota reached (#{SETTINGS[:max_badwords]})", 86400)
+      SETTINGS[:records][_user_id] = 0
     end
+  rescue => e
+    log(msg, "ERR #{e}")
+  end
+
+  return false
+end
+
+reload!(nil)
+
+Telegram::Bot::Client.run(TOKEN_BOT) do |bot|
+  bot.listen do |msg|
+    act_blockme(bot, msg) \
+    or act_reload(bot, msg) \
+    or act_filter(bot, msg)
   end
 end
