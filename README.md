@@ -12,7 +12,7 @@
 
 ### Testing the bot
 
-1. Create a supergroup (and an optional logging group, se below)
+1. Create a supergroup (and an optional logging group, see below)
 1. Add your testing bot
 1. Allow your bot to delete message and ban user
 1. Modify the list `badwords.txt`
