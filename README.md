@@ -1,7 +1,7 @@
 ### Bot features
 
 * `//blockme NUMBER_OF_SECONDS`:
-  User can restrict themselves.
+  User can restrict themself.
   `NUMBER_OF_SECONDS` should be `>= 120`
 * `/reload`:
   Reload bot configuration. This feature is disabled now.
