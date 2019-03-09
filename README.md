@@ -7,7 +7,7 @@
   Reload bot configuration. This feature is disabled now.
 * `Badword filter`:
   Text message that contains some bad word from a list `badwords.txt`
-  will be deleted and a customer user counter will be increased.
+  will be deleted and a custom user counter will be increased.
   User will be restricted 24 hours if the counter is `> 5`.
 
 ### Testing the bot
