@@ -32,19 +32,8 @@ end
 # when the bot starts.
 def reload!(msg)
   SETTINGS[:records] = {}
-  SETTINGS[:regexps] = Avn::Filter::build
-  log(msg, "REL #{SETTINGS[:regexps]}")
-end
-
-def act_reload(bot, msg)
-  if msg.text == "/reload"
-    if WHITE_CHANNELS.include?(msg.chat.id.to_s)
-      reload!(msg)
-    end
-    return true
-  end
-
-  return false
+  Avn::Filter::build
+  log(msg, "REL #{Avn::Filter::regs}")
 end
 
 def _act_restrict(bot, msg, notes, expiration = 86400)
@@ -130,7 +119,6 @@ reload!(nil)
 Telegram::Bot::Client.run(TOKEN_BOT) do |bot|
   bot.listen do |msg|
     act_blockme(bot, msg) \
-    or act_reload(bot, msg) \
     or act_filter(bot, msg)
   end
 end

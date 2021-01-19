@@ -9,15 +9,25 @@ module Avn
     # Lauxanh is one of the best online services for Vietnamese young people;)
     @@source = File.join(File.dirname(__FILE__), "badwords.txt")
     @@regs = nil
-    def build
-      regs = File.open(@@source, "r:utf-8").readlines.map(&:strip)
-      @@regs = regs.map do |reg|
+    @@regs_users = {}
+
+    def regs
+      @@regs
+    end
+
+    def build(source_file = nil)
+      file_name = (source_file || @@source)
+      return nil unless File.exist?(file_name)
+      regs_loaded = File.open(file_name, "r:utf-8").readlines.map(&:strip)
+      regs_found = regs_loaded.map do |reg|
         st = "/\\b#{reg.split.join.split("").join("\\p{^L}{0,4}")}\\b/i"
         st.to_regexp
       end
-      @@regs
+      @@regs = regs_found unless source_file
+      regs_found
     end
-    def match(st)
+
+    def match(st, username = nil)
       rawst = st.to_s.split.join(" ")
       found = @@regs.detect{|reg| rawst.match(reg) }
       found ? {reg: found, rawst: rawst}: nil
@@ -27,6 +37,7 @@ end
 if $0 == __FILE__
   include Avn::Filter
   Avn::Filter::build
+  puts Avn::Filter::regs
   [
    "mó    đ.é+o so",
    "dek",
@@ -36,6 +47,7 @@ if $0 == __FILE__
    "f***ck",
    "wtf?",
    "w.t+f",
+   "đmclgt",
    "v cl",
    "clgt",
    "vv cl",

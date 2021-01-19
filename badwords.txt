@@ -1,1 +1,1 @@
-vkl
+gists/linuxvn-bot-badwords.txt
