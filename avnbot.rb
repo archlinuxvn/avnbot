@@ -67,7 +67,7 @@ EOF
 end
 
 def act_blockme(bot, msg)
-  found = msg.text.to_s.strip.match(%r{^//blockme (\d+)$})
+  found = msg ? msg.text.to_s.strip.match(%r{^//blockme (\d+)$}) : nil
   return false if not found
 
   expiration = found[1].to_i
@@ -80,7 +80,7 @@ def act_blockme(bot, msg)
 end
 
 def act_filter(bot, msg)
-  found = Avn::Filter.match(msg.text)
+  found = Avn::Filter.match(msg ? msg.text : nil)
   return false if not found
 
   begin
