@@ -92,6 +92,7 @@ User (Id/Name): #{msg.from.id} @#{msg.from.username}
 Msg: #{msg.text}
 Group: #{msg.chat.id}
 Reason: Filtered by Lauxanh
+Reg.: #{found[:reg].inspect.gsub("\\p{^L}{0,4}","")}
 EOF
 
     bot.api.send_message(chat_id: CHANNEL_ID_LINUXVN_LOGS, text: mod_logs)
